@@ -42,13 +42,13 @@ jobs:
           "dist/TanachTracker.app" || true
     
     - name: Upload app as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: TanachTracker-macOS
         path: dist/TanachTracker.app
     
     - name: Upload DMG as artifact (if created)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: TanachTracker-macOS-DMG
