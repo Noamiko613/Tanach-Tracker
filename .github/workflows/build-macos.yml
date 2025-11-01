@@ -28,6 +28,8 @@ jobs:
     - name: Build macOS app with PyInstaller
       run: |
         pyinstaller main_macos.spec
+        # Remove quarantine attributes to help with Gatekeeper
+        xattr -cr dist/TanachTracker.app || true
     
     - name: Create DMG (optional)
       run: |
@@ -45,7 +47,10 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: TanachTracker-macOS
-        path: dist/TanachTracker.app
+        path: |
+          dist/TanachTracker.app
+          MACOS_INSTALL_INSTRUCTIONS.md
+          README.md
     
     - name: Upload DMG as artifact (if created)
       uses: actions/upload-artifact@v4
