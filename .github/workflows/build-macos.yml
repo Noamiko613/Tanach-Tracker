@@ -1,0 +1,64 @@
+name: Build macOS App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt6 pyinstaller
+    
+    - name: Build macOS app with PyInstaller
+      run: |
+        pyinstaller main_macos.spec
+    
+    - name: Create DMG (optional)
+      run: |
+        brew install create-dmg
+        create-dmg \
+          --volname "Tanach Tracker" \
+          --window-pos 200 120 \
+          --window-size 800 400 \
+          --icon-size 100 \
+          --app-drop-link 600 185 \
+          "TanachTracker.dmg" \
+          "dist/TanachTracker.app" || true
+    
+    - name: Upload app as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: TanachTracker-macOS
+        path: dist/TanachTracker.app
+    
+    - name: Upload DMG as artifact (if created)
+      uses: actions/upload-artifact@v3
+      if: success()
+      with:
+        name: TanachTracker-macOS-DMG
+        path: TanachTracker.dmg
+    
+    - name: Create Release (on tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          TanachTracker.dmg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
